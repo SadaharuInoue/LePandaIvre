@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #faf9f6;
+  --fg: #232b26;
+  --muted: #5f6d64;
+  --card: #ffffff;
+  --line: #e5e3da;
+  --accent: #2e7d52;
+  --accent-strong: #22603f;
+  --accent-soft: #e9f3ec;
+  --accent-contrast: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121714;
+    --fg: #e8ece9;
+    --muted: #9caba2;
+    --card: #1b221e;
+    --line: #2c362f;
+    --accent: #62be8c;
+    --accent-strong: #83d1a6;
+    --accent-soft: #20301f;
+    --accent-contrast: #0f231a;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-contrast: var(--accent-contrast);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic",
+    "Yu Gothic UI", Meiryo, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.8;
+}
