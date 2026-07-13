@@ -28,6 +28,7 @@ npm run build  # out/ に静的ファイルを生成
 | ファイル | 内容 |
 |---|---|
 | `src/data/profile.ts` | 名前・キャッチコピー・自己紹介文 |
+| `src/data/services.ts` | ご相談いただけること（サービス内容） |
 | `src/data/skills.ts` | スキル（3カテゴリ） |
 | `src/data/projects.ts` | プロジェクト一覧 |
 | `src/data/writing.ts` | note執筆テーマと代表記事 |

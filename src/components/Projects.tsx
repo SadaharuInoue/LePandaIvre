@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Section from "./Section";
 import { projects } from "@/data/projects";
 
@@ -9,10 +10,12 @@ export default function Projects() {
       lead="仕事の外でも手を動かしています。最近の取り組みから。"
     >
       <div className="grid gap-6 md:grid-cols-2">
-        {projects.map((project) => (
+        {projects.map((project, i) => (
           <article
             key={project.title}
-            className="flex flex-col rounded-2xl border border-line bg-card p-6"
+            data-reveal
+            style={{ "--reveal-delay": `${i * 90}ms` } as CSSProperties}
+            className="flex flex-col rounded-2xl border border-line bg-card p-6 transition hover:-translate-y-1 hover:border-accent/60 hover:shadow-lg"
           >
             <h3 className="text-lg font-bold">
               <span className="mr-2">{project.emoji}</span>

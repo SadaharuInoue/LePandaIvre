@@ -2,10 +2,10 @@ import type { SkillCategory } from "./types";
 
 export const skills: SkillCategory[] = [
   {
-    title: "上流工程・プロジェクトマネジメント",
+    title: "ITコンサルティング・PM",
     emoji: "🧭",
     summary:
-      "医療機器・医療情報システム歴 約25年。発注者側に立った上流支援が専門領域です。",
+      "医療機器・医療情報システム歴 約25年。発注者側に立った上流支援が専門。医療に限らずIT導入全般に対応します。",
     items: [
       "ベンダー選定・RFP作成",
       "要件定義・基本設計",
