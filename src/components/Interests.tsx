@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Section from "./Section";
 import { interests } from "@/data/interests";
 
@@ -9,10 +10,12 @@ export default function Interests() {
       lead="興味を持ったら調べて、試して、書く。いま追いかけているテーマたち。"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {interests.map((interest) => (
+        {interests.map((interest, i) => (
           <div
             key={interest.title}
-            className="rounded-2xl border border-line bg-card p-5"
+            data-reveal
+            style={{ "--reveal-delay": `${(i % 3) * 90}ms` } as CSSProperties}
+            className="rounded-2xl border border-line bg-card p-5 transition hover:-translate-y-1 hover:border-accent/60 hover:shadow-lg"
           >
             <h3 className="font-bold">
               <span className="mr-2">{interest.emoji}</span>

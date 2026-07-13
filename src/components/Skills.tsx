@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Section from "./Section";
 import { skills } from "@/data/skills";
 
@@ -9,10 +10,12 @@ export default function Skills() {
       lead="医療ドメイン×上流工程を軸に、開発からAI活用まで。"
     >
       <div className="grid gap-6 md:grid-cols-3">
-        {skills.map((category) => (
+        {skills.map((category, i) => (
           <div
             key={category.title}
-            className="rounded-2xl border border-line bg-card p-6"
+            data-reveal
+            style={{ "--reveal-delay": `${i * 90}ms` } as CSSProperties}
+            className="rounded-2xl border border-line bg-card p-6 transition hover:-translate-y-1 hover:border-accent/60 hover:shadow-lg"
           >
             <h3 className="text-lg font-bold">
               <span className="mr-2">{category.emoji}</span>

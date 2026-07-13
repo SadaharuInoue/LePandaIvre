@@ -42,6 +42,56 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ---- モーション（prefers-reduced-motion 時はすべて無効） ---- */
+@media (prefers-reduced-motion: no-preference) {
+  /* スクロール連動フェードイン（.js はScrollRevealが付与） */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+    transition-delay: var(--reveal-delay, 0s);
+  }
+  .js [data-reveal].revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Hero の初回表示アニメーション */
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .hero-rise {
+    animation: rise-in 0.7s ease both;
+    animation-delay: var(--rise-delay, 0s);
+  }
+
+  /* Hero 背景のゆっくり漂うアクセント */
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(4%, 6%) scale(1.08);
+    }
+  }
+  .hero-blob {
+    animation: drift 24s ease-in-out infinite;
+  }
+  .hero-blob-slow {
+    animation: drift 34s ease-in-out infinite reverse;
+  }
+}
+
 body {
   background-color: var(--bg);
   color: var(--fg);

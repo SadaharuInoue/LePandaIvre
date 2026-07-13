@@ -4,6 +4,13 @@ export type ExternalLink = {
   description: string;
 };
 
+export type Service = {
+  title: string;
+  emoji: string;
+  description: string;
+  points: string[];
+};
+
 export type SkillCategory = {
   title: string;
   emoji: string;
