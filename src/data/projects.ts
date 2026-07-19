@@ -2,6 +2,17 @@ import type { Project } from "./types";
 
 export const projects: Project[] = [
   {
+    title: "VibeShield — 社内AI開発を安全に進める仕組み",
+    emoji: "🛡️",
+    description:
+      "現場の人がAIと一緒に業務アプリをどんどん作れるようにしながら、会社の大事なデータを壊さない・散らばらせないための「安全な土台」の設計提案。共通ログイン・見る専用の窓口・ためる専用の窓口の3つの仕組みと、現場に配るAIへの指示文まで設計しています。",
+    tags: ["社内AI活用", "アーキテクチャ設計", "セキュリティ", "バイブコーディング"],
+    link: {
+      label: "提案ページを見る",
+      url: "/vibeshield/",
+    },
+  },
+  {
     title: "Garmin ウォッチフェイス自作",
     emoji: "⌚",
     description:
