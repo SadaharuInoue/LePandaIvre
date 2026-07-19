@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Driven Internal Development Architecture | Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans JP"', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
+                    },
+                    colors: {
+                        emerald: {
+                            500: '#10b981',
+                            600: '#059669',
+                            950: '#022c22',
+                        },
+                        slate: {
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-border {
+            position: relative;
+        }
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            padding: 1px;
+            background: linear-gradient(to bottom right, #10b981, rgba(16, 185, 129, 0.1), #1e293b);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .glow-effect {
+            box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-bold">V</div>
+                <span class="font-bold tracking-tight text-lg">VibeShield Architecture</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+                <a href="#concept" class="hover:text-emerald-500 transition-colors">コンセプト</a>
+                <a href="#architecture" class="hover:text-emerald-500 transition-colors">アーキテクチャ</a>
+                <a href="#components" class="hover:text-emerald-500 transition-colors">3大機能</a>
+                <a href="#prompt" class="hover:text-emerald-500 transition-colors">配布プロンプト</a>
+                <a href="#code-sample" class="hover:text-emerald-500 transition-colors">API定義</a>
+            </nav>
+            <div class="text-xs px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/30 text-emerald-400 font-medium">
+                Solution Proposal
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative py-20 overflow-hidden">
+        <!-- Background glows -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+            <span class="text-emerald-500 text-sm font-semibold tracking-wider uppercase bg-emerald-950/50 px-3 py-1 rounded-full border border-emerald-500/20">Enterprise AI Solution</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mt-6 mb-8 leading-[1.15] bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                現場の「バイブス」を爆速化し、<br>
+                管理の「ガバナンス」を100%死守する
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">
+                AI（バイブコーディング）による現場主導の超高速開発を推進しながら、基幹データの整合性破壊やシャドーIT化を完璧に阻止する、次世代のセキュア・バックエンド。
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#architecture" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-6 py-3 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 glow-effect">
+                    構成図を見る
+                </a>
+                <a href="#prompt" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold px-6 py-3 rounded-lg transition-all duration-200">
+                    配布プロンプトの解説
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Dilemma Section -->
+    <section id="concept" class="py-16 bg-slate-900/40 border-y border-slate-800/60">
+        <div class="max-w-5xl mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">なぜ、今この設計が求められるのか？</h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Pain points -->
+                <div class="bg-slate-950/60 p-8 rounded-2xl border border-rose-500/10">
+                    <div class="w-10 h-10 rounded-lg bg-rose-950 flex items-center justify-center text-rose-500 mb-6">
+                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-rose-400 mb-4">現状の「野良開発」のリスク</h3>
+                    <ul class="space-y-3.5 text-slate-400 text-sm md:text-base">
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-rose-500 mt-1">✕</span>
+                            <span>現場の拙いAIコードが<strong>基幹マスタを破壊・不整合</strong>を起こす恐怖</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-rose-500 mt-1">✕</span>
+                            <span>認証なし・ログなしの独自アプリ乱立による<strong>セキュリティ崩壊</strong></span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-rose-500 mt-1">✕</span>
+                            <span>個人PCや野良スプレッドシートへのデータ散逸（<strong>シャドーIT化</strong>）</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Solution -->
+                <div class="bg-slate-950/60 p-8 rounded-2xl border border-emerald-500/10">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-950/80 flex items-center justify-center text-emerald-400 mb-6">
+                        <i class="fa-solid fa-shield-halved text-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-emerald-400 mb-4">本フレームワークによる解決</h3>
+                    <ul class="space-y-3.5 text-slate-400 text-sm md:text-base">
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-1">✓</span>
+                            <span><strong>安全なAPIという「防波堤」</strong>を敷き、基幹マスタを物理隔離する</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-1">✓</span>
+                            <span>全アプリに共通の認証を強制し、<strong>アクセスログを完全把握</strong>する</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-1">✓</span>
+                            <span>一元化された「汎用データ蓄積API」により<strong>データの散逸を防ぐ</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section (Graphical Blueprint) -->
+    <section id="architecture" class="py-20">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <span class="text-emerald-500 text-xs font-semibold tracking-wider uppercase bg-emerald-950/30 px-3 py-1 rounded-full">System Architecture Blueprint</span>
+                <h2 class="text-3xl md:text-4xl font-bold mt-4">セキュア・バックエンドの全体像</h2>
+                <p class="text-slate-400 mt-4 max-w-xl mx-auto">直接データベースを触らせない。APIの砂場（サンドボックス）で現場を踊らせる仕組み。</p>
+            </div>
+
+            <!-- Graphical Diagram Container -->
+            <div class="bg-slate-900/60 p-6 md:p-10 rounded-3xl border border-slate-800 glow-effect overflow-x-auto">
+                <div class="min-w-[800px] flex flex-col gap-10">
+
+                    <!-- Top Layer: Legacy & Master -->
+                    <div class="flex justify-between items-center bg-slate-950/80 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-server text-2xl text-slate-500"></i>
+                            <div>
+                                <h4 class="font-bold text-sm">【基幹システム】（触れてはならない聖域）</h4>
+                                <p class="text-xs text-slate-500">職員情報マスタ / 顧客情報 / 取引先データ等</p>
+                            </div>
+                        </div>
+                        <div class="px-3 py-1 bg-rose-950 text-rose-400 border border-rose-500/20 rounded text-xs font-mono font-bold">Write-Protected</div>
+                    </div>
+
+                    <!-- Down Arrow representing read-only flow -->
+                    <div class="flex justify-center -my-6">
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs font-mono text-slate-500 mb-1">抽出・同期 (Read-Only)</div>
+                            <i class="fa-solid fa-arrow-down text-emerald-500 animate-pulse text-lg"></i>
+                        </div>
+                    </div>
+
+                    <!-- Middle Layer: Admin Control Block -->
+                    <div class="bg-gradient-to-r from-emerald-950/20 via-slate-950 to-emerald-950/20 p-8 rounded-2xl border-2 border-emerald-500/40 relative">
+                        <span class="absolute -top-3 left-6 px-3 py-0.5 bg-emerald-500 text-slate-950 text-xs font-bold rounded-full">システム管理が提供するAPI & DB</span>
+
+                        <div class="grid grid-cols-3 gap-6">
+                            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-center">
+                                <i class="fa-solid fa-id-card-clip text-xl text-emerald-400 mb-2"></i>
+                                <h5 class="font-bold text-sm text-slate-200">① 共通認証</h5>
+                                <p class="text-xs text-slate-500 mt-2">すべての通信の入口。<br>社内アカウント連携必須。</p>
+                            </div>
+                            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-center">
+                                <i class="fa-solid fa-database text-xl text-emerald-400 mb-2"></i>
+                                <h5 class="font-bold text-sm text-slate-200">② マスタ参照 API</h5>
+                                <p class="text-xs text-slate-500 mt-2">安全なコピーをGET提供。<br>基幹データ破損リスクを排除。</p>
+                            </div>
+                            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-center">
+                                <i class="fa-solid fa-folder-open text-xl text-emerald-400 mb-2"></i>
+                                <h5 class="font-bold text-sm text-slate-200">③ 汎用蓄積 API</h5>
+                                <p class="text-xs text-slate-500 mt-2">構造固定・中身自由（JSON）。<br>野良スプレッドシート化を防ぐ。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Up/Down arrows with custom protocols -->
+                    <div class="flex justify-around px-10 -my-6">
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-arrow-down-up text-emerald-500 text-lg"></i>
+                            <span class="text-[10px] font-mono text-slate-500 mt-1">認証・データ通信 (API経由限定)</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Layer: User Land apps created by Vibe Coding -->
+                    <div class="bg-slate-950/80 p-6 rounded-xl border border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-robot text-emerald-500"></i>
+                                <h4 class="font-bold text-sm">【現場のバイブコーディング・アプリ群】（ノンプログラマー開発）</h4>
+                            </div>
+                            <span class="text-[11px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Basic Prompt Controlled</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="p-3 bg-slate-900/50 rounded border border-slate-800/80 text-center text-xs">日報管理アプリ</div>
+                            <div class="p-3 bg-slate-900/50 rounded border border-slate-800/80 text-center text-xs">備品申請ツール</div>
+                            <div class="p-3 bg-slate-900/50 rounded border border-slate-800/80 text-center text-xs">顧客訪問ログ</div>
+                            <div class="p-3 bg-slate-900/50 rounded border border-slate-800/80 text-center text-xs">スケジュール連携</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The 3 Pillars Section -->
+    <section id="components" class="py-16 bg-slate-900/20">
+        <div class="max-w-5xl mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-16">ガバナンスを担保する「3大コア機能」</h2>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Pillar 1 -->
+                <div class="gradient-border p-8 rounded-2xl bg-slate-950/40">
+                    <div class="text-emerald-500 text-sm font-bold font-mono mb-2">01</div>
+                    <h3 class="text-lg font-bold mb-3 text-slate-200">共通ユーザー認証</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        社内アカウント認証モジュールを共通化。これにより、誰がいつ何のアプリを使ったかの「監査ログ」を漏れなく一括取得します。
+                    </p>
+                </div>
+                <!-- Pillar 2 -->
+                <div class="gradient-border p-8 rounded-2xl bg-slate-950/40">
+                    <div class="text-emerald-500 text-sm font-bold font-mono mb-2">02</div>
+                    <h3 class="text-lg font-bold mb-3 text-slate-200">読込専用マスタ API</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        基幹DBを傷つけない防波堤。必要なデータだけを `GET` 専用のREST APIで配信し、現場アプリからの誤ったマスタ変更を物理的に防ぎます。
+                    </p>
+                </div>
+                <!-- Pillar 3 -->
+                <div class="gradient-border p-8 rounded-2xl bg-slate-950/40">
+                    <div class="text-emerald-500 text-sm font-bold font-mono mb-2">03</div>
+                    <h3 class="text-lg font-bold mb-3 text-slate-200">汎用データ蓄積 API</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        `app_id`, `key`, `value (JSON)` のように物理的な箱は固定。中身の構造は各アプリが自由に格納可能な、一元化された書き込み専用ストレージAPIを提供。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Governance Prompt Section -->
+    <section id="prompt" class="py-20 bg-slate-900/30">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="mb-10 text-center">
+                <span class="text-emerald-500 text-xs font-semibold tracking-wider uppercase bg-emerald-950/30 px-3 py-1 rounded-full">Core AI Control Instruction</span>
+                <h2 class="text-2xl md:text-3xl font-bold mt-3">現場に配布する「基本システムプロンプト」</h2>
+                <p class="text-slate-400 mt-2">バイブコーディング時、現場が最初にAIに渡すことで、規定違反のコード生成を元から断つためのプロトコル。</p>
+            </div>
+
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden">
+                <div class="bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                    <span class="text-xs font-mono text-slate-400">system-instructions-v1.txt</span>
+                    <button onclick="copyPrompt()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded transition-all flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> コピーする
+                    </button>
+                </div>
+                <div class="p-6 md:p-8 font-mono text-sm text-emerald-400/90 leading-relaxed overflow-x-auto whitespace-pre-wrap max-h-[400px] overflow-y-auto" id="promptText">
+あなたは我が社の社内業務アプリ開発専用のアシスタント（エンジニアエージェント）です。
+コードを生成する際は、以下の『システム管理セキュリティ規定』を絶対に遵守してください。
+
+1. 【認証の必須化】
+   アプリ起動時、およびすべてのAPIリクエストを走らせる前に、必ずシステム管理が提供する
+   共通認証モジュール（Auth Client）を呼び出すコードを実装してください。未認証通信を許容しないでください。
+
+2. 【マスタ参照の規則】
+   職員データ・顧客・取引先データを参照する際は、アプリ内のローカルDBやローカルファイルを使用せず、
+   必ずシステム管理が提供する「マスタ取得API（GET）」をリアルタイムにフェッチするコードを書いてください。
+
+3. 【データの保存・蓄積】
+   アプリがユーザー入力を保存・蓄積・更新する場合、独立した野良データベース（SQLiteやLocalスプレッドシート等）の作成は厳禁です。
+   必ず提供された「汎用フリーストレージAPI (POST/PUT)」を使用し、データをJSONシリアライズしてサーバー側に一元蓄積するコードを作成してください。
+
+これらに違反する、独自のデータストア作成や未認証エンドポイント通信を含むコードを生成することは絶対に禁止します。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology stack / REST API Sample -->
+    <section id="code-sample" class="py-20 border-t border-slate-900">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6">汎用ストレージ（書き込み用）<br>API構造サンプル</h2>
+                    <p class="text-slate-400 mb-6 leading-relaxed">
+                        管理側はテーブルを新設せず、常に1つのテーブルで全社データを集約。中身（`payload`）のJSON形式をバイブコーディング側が自由に構築することで、スキーマ変更コストなしでデータの一元化（一箇所に集める）を実現します。
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xs font-mono mt-0.5">1</span>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-200">DBの肥大化を防御</h4>
+                                <p class="text-xs text-slate-500 mt-1">管理者が意図しない不正インデックスの作成を防ぎます。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xs font-mono mt-0.5">2</span>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-200">AIとの親和性</h4>
+                                <p class="text-xs text-slate-500 mt-1">JSONデータなら現場のAIが最も得意とする型定義で安全にハンドリングできます。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden font-mono text-sm text-slate-300">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                        <span class="text-xs text-slate-400">POST /api/v1/flex-storage</span>
+                        <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">application/json</span>
+                    </div>
+                    <div class="p-6">
+<pre class="overflow-x-auto text-emerald-400/90">{
+  <span class="text-slate-400">"app_id"</span>: <span class="text-amber-300">"vibe-app-daily-report"</span>,
+  <span class="text-slate-400">"user_id"</span>: <span class="text-amber-300">"user_9981a"</span>,
+  <span class="text-slate-400">"data_key"</span>: <span class="text-amber-300">"report_2026_07_19"</span>,
+  <span class="text-slate-400">"payload"</span>: {
+    <span class="text-slate-400">"title"</span>: <span class="text-slate-200">"AI導入検証報告"</span>,
+    <span class="text-slate-400">"progress_rate"</span>: <span class="text-slate-200">85</span>,
+    <span class="text-slate-400">"notes"</span>: <span class="text-slate-200">"管理側のAPIのおかげで、
+               本日現場でUI変更が完了。"</span>
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Portfolio Pitch -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-16">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">このアーキテクチャ設計・開発を私が担当します</h3>
+            <p class="text-slate-400 max-w-xl mx-auto text-sm md:text-base mb-8">
+                単にフロントのUIや便利な機能を作るだけでなく、企業が生成AI（バイブコーディング）の恩恵を最大化し、同時に安全なインフラを維持できるための「中核システム」の構築・統制を支援可能です。
+            </p>
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 rounded-full border border-slate-800 text-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>常時、お仕事・技術提携のご相談を受け付けております。</span>
+            </div>
+            <div class="mt-8">
+                <a href="../" class="text-sm text-slate-500 hover:text-emerald-400 transition-colors">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i>ポートフォリオトップへ戻る
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').innerText;
+
+            // Clipboard API Fallback logic
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = promptText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            // Simple visual feedback
+            const button = document.querySelector('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fa-solid fa-check"></i> コピーしました';
+            button.classList.remove('bg-slate-800', 'text-slate-200');
+            button.classList.add('bg-emerald-500', 'text-slate-950');
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.add('bg-slate-800', 'text-slate-200');
+                button.classList.remove('bg-emerald-500', 'text-slate-950');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -34,6 +34,15 @@ export default function Projects() {
                 </li>
               ))}
             </ul>
+            {project.link && (
+              <a
+                href={project.link.url}
+                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-strong hover:underline"
+              >
+                {project.link.label}
+                <span aria-hidden>→</span>
+              </a>
+            )}
           </article>
         ))}
       </div>

@@ -23,6 +23,10 @@ export type Project = {
   emoji: string;
   description: string;
   tags: string[];
+  link?: {
+    label: string;
+    url: string;
+  };
 };
 
 export type WritingTheme = {

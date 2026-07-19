@@ -2,6 +2,17 @@ import type { Project } from "./types";
 
 export const projects: Project[] = [
   {
+    title: "VibeShield — セキュア・バイブコーディング基盤の提案",
+    emoji: "🛡️",
+    description:
+      "現場主導のAI開発（バイブコーディング）を推進しつつ、基幹データの破壊やシャドーIT化を防ぐセキュア・バックエンドのアーキテクチャ提案。共通認証・読込専用マスタAPI・汎用データ蓄積APIの3本柱と、現場に配布する統制用システムプロンプトまで設計しています。",
+    tags: ["アーキテクチャ設計", "AIガバナンス", "REST API", "バイブコーディング"],
+    link: {
+      label: "提案ページを見る",
+      url: "/LePandaIvre/vibeshield/",
+    },
+  },
+  {
     title: "Garmin ウォッチフェイス自作",
     emoji: "⌚",
     description:
