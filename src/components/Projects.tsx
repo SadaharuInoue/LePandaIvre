@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import Section from "./Section";
 import { projects } from "@/data/projects";
 
@@ -35,13 +36,13 @@ export default function Projects() {
               ))}
             </ul>
             {project.link && (
-              <a
+              <Link
                 href={project.link.url}
                 className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-strong hover:underline"
               >
                 {project.link.label}
                 <span aria-hidden>→</span>
-              </a>
+              </Link>
             )}
           </article>
         ))}
