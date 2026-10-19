@@ -2,6 +2,17 @@ import type { Project } from "./types";
 
 export const projects: Project[] = [
   {
+    title: "関西人分の1 — もしも関西のどこかに生まれたら",
+    emoji: "🎲",
+    description:
+      "関西2府4県のどこかに、人口の比率でランダムに生まれるテキスト人生シミュレーション。その土地の方言・地場産業・お祭りに触れながら、進学や就職で町を出るか、地元に残るかを選んでいきます。遊びながら関西の市町村のまめ知識が身につくブラウザゲームです。",
+    tags: ["ブラウザゲーム", "地域・方言", "Next.js", "AI協働開発"],
+    link: {
+      label: "遊んでみる",
+      url: "/kansai/",
+    },
+  },
+  {
     title: "VibeShield — 社内AI開発を安全に進める仕組み",
     emoji: "🛡️",
     description:
