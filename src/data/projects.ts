@@ -2,6 +2,17 @@ import type { Project } from "./types";
 
 export const projects: Project[] = [
   {
+    title: "月々1万円の罠 — リボ払い体験ゲーム",
+    emoji: "💳",
+    description:
+      "「毎月のお支払いは1万円でOK」。新社会人になって24ヶ月、買いたいものや避けられない出費にリボ払いを使い続けるとどうなるのか。残高が増え、利息が元金を飲み込んでいく様子を、遊びながら体感できるブラウザゲームです。",
+    tags: ["ブラウザゲーム", "金融リテラシー", "Next.js", "AI協働開発"],
+    link: {
+      label: "遊んでみる",
+      url: "/revo/",
+    },
+  },
+  {
     title: "関西人分の1 — もしも関西のどこかに生まれたら",
     emoji: "🎲",
     description:
