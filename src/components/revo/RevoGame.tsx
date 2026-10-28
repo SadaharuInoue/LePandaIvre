@@ -3,7 +3,10 @@
 import { useState } from "react";
 import CopyButton from "@/components/CopyButton";
 import {
-  MONTHLY_PAYMENT,
+  defaultConfig,
+  fill,
+  paymentFor,
+  payLabel,
   MONTHS,
   LIMIT_STEP,
   choicesFor,
@@ -14,6 +17,7 @@ import {
   projection,
   settle,
   yen,
+  type Config,
   type Life,
   type Method,
   type Settlement,
@@ -32,15 +36,16 @@ export default function RevoGame() {
   const [life, setLife] = useState<Life | null>(null);
   const [phase, setPhase] = useState<Phase>({ name: "event" });
   const [finished, setFinished] = useState(false);
+  const [config, setConfig] = useState<Config>(defaultConfig);
 
   function start() {
-    setLife(createLife());
+    setLife(createLife(config));
     setPhase({ name: "event" });
     setFinished(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  if (!life) return <TitleScreen onStart={start} />;
+  if (!life) return <TitleScreen config={config} onChange={setConfig} onStart={start} />;
 
   if (finished) {
     return <Ending life={life} onRestart={() => setLife(null)} />;
@@ -116,7 +121,23 @@ export default function RevoGame() {
   );
 }
 
-function TitleScreen({ onStart }: { onStart: () => void }) {
+const choiceBtn = (active: boolean) =>
+  `rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+    active
+      ? "border-accent bg-accent text-accent-contrast"
+      : "border-line bg-card hover:border-accent hover:text-accent"
+  }`;
+
+function TitleScreen({
+  config,
+  onChange,
+  onStart,
+}: {
+  config: Config;
+  onChange: (c: Config) => void;
+  onStart: () => void;
+}) {
+  const fixed = config.mode === "fixed";
   return (
     <section className="relative overflow-hidden border-b border-line bg-accent-soft/60">
       <div
@@ -131,7 +152,9 @@ function TitleScreen({ onStart }: { onStart: () => void }) {
           月々1万円の罠
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-relaxed sm:text-lg">
-          「毎月のお支払いは、ずっと1万円でOK」。
+          {fixed
+            ? `「毎月のお支払いは、ずっと${payLabel(config)}でOK」。`
+            : `「毎月のお支払いは、${payLabel(config)}から。残高に合わせて無理なく」。`}
           <br />
           新社会人のあなたは、クレジットカードを手に入れました。これから2年間、買いたくなるもの・避けられない出費が次々とやってきます。
           <br />
@@ -140,8 +163,82 @@ function TitleScreen({ onStart }: { onStart: () => void }) {
         <ul className="mt-6 max-w-2xl space-y-1 text-sm leading-relaxed text-muted">
           <li>・手取り月24万円、生活費21万円。毎月の余裕は3万円</li>
           <li>・貯金は10万円からスタート</li>
-          <li>・リボ手数料は年15%、毎月の支払いは1万円で固定</li>
+          <li>
+            ・リボ手数料は年{Math.round(config.rate * 100)}%、
+            {fixed
+              ? `毎月の支払いは${payLabel(config)}で固定`
+              : "毎月の支払いは残高10万円ごとに5,000円ずつ増える"}
+          </li>
         </ul>
+
+        <div className="mt-8 max-w-2xl space-y-4 rounded-2xl border border-line bg-card p-5">
+          <p className="text-xs font-semibold tracking-widest text-muted">
+            難易度の設定
+          </p>
+          <div>
+            <p className="text-sm font-semibold">返済方式</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                aria-pressed={fixed}
+                onClick={() => onChange({ ...config, mode: "fixed" })}
+                className={choiceBtn(fixed)}
+              >
+                元利定額方式
+              </button>
+              <button
+                type="button"
+                aria-pressed={!fixed}
+                onClick={() => onChange({ ...config, mode: "slide" })}
+                className={choiceBtn(!fixed)}
+              >
+                残高スライド方式
+              </button>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              {fixed
+                ? "毎月の支払額がずっと一定。ラクに見えますが、残高が増えると元金が減らなくなります。"
+                : "残高が増えるほど毎月の支払額も増えます。返済は進みやすい反面、生活費を圧迫します。"}
+            </p>
+          </div>
+          {fixed && (
+            <div>
+              <p className="text-sm font-semibold">毎月の支払額</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[10000, 20000, 30000].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    aria-pressed={config.payment === n}
+                    onClick={() => onChange({ ...config, payment: n })}
+                    className={choiceBtn(config.payment === n)}
+                  >
+                    {yen(n)}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                少額ほど罠にはまりやすく、3万円だと毎月の余裕がゼロになります。
+              </p>
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-semibold">実質年率</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[0.12, 0.15, 0.18].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  aria-pressed={config.rate === r}
+                  onClick={() => onChange({ ...config, rate: r })}
+                  className={choiceBtn(config.rate === r)}
+                >
+                  年{Math.round(r * 100)}%
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
         <div className="mt-10">
           <button
             type="button"
@@ -210,7 +307,7 @@ function EventCard({
                 ? `カードのリボ残高は${yen(life.balance)}。使い道は自由です。`
                 : "使い道は自由です。"
             }`
-          : scene.item.body}
+          : fill(scene.item.body, life.config)}
       </p>
       {!isBonus && (
         <p className="mt-4 text-lg font-bold">{yen(scene.item.price)}</p>
@@ -262,7 +359,7 @@ function SettleCard({
   const { interest, payment, principal, shortfall } = settlement;
   const interestPct = payment > 0 ? Math.min(100, Math.round((interest / payment) * 100)) : 0;
   const stuck = interest >= payment && payment > 0;
-  const proj = life.balance > 0 ? projection(life.balance) : undefined;
+  const proj = life.balance > 0 ? projection(life.balance, life.config) : undefined;
   const longProj = proj === null || (proj !== undefined && proj.months > MONTHS);
   const repayOptions = [10000, 30000, 50000].filter(
     (a) => a <= life.cash && a <= life.balance,
@@ -326,7 +423,7 @@ function SettleCard({
           }`}
         >
           {proj === null
-            ? `今日から1円も使わなくても、毎月${yen(MONTHLY_PAYMENT)}ずつでは元金が減りません。永遠に終わりません。`
+            ? `今日から1円も使わなくても、毎月${yen(life.config.payment)}ずつでは元金が減りません。永遠に終わりません。`
             : `今日から新しく使わなくても、完済まであと${proj.months}ヶ月（${(proj.months / 12).toFixed(1)}年）、利息はあと${yen(proj.interest)}かかります。`}
         </p>
       )}
@@ -417,8 +514,12 @@ function StatsPanel({ life }: { life: Life }) {
       </p>
       <dl className="mt-3 space-y-3">
         <div>
-          <dt className="text-xs text-muted">毎月のお支払い</dt>
-          <dd className="text-xl font-bold">{yen(MONTHLY_PAYMENT)}</dd>
+          <dt className="text-xs text-muted">
+            {life.config.mode === "fixed" ? "毎月のお支払い" : "今月のお支払い目安"}
+          </dt>
+          <dd className="text-xl font-bold">
+            {yen(paymentFor(life.config, life.balance))}
+          </dd>
         </div>
         <div>
           <dt className="text-xs text-muted">貯金</dt>
@@ -469,7 +570,7 @@ const methodLabel: Record<Method, string> = {
 
 function Ending({ life, onRestart }: { life: Life; onRestart: () => void }) {
   const e = ending(life);
-  const shareText = `月々1万円の罠｜リボ払い体験ゲームで「${e.title}」になりました。利息は合計${yen(
+  const shareText = `月々1万円の罠｜${life.config.mode === "fixed" ? `定額${yen(life.config.payment)}` : "残高スライド"}・年${Math.round(life.config.rate * 100)}%で「${e.title}」になりました。利息は合計${yen(
     life.totalInterest + (e.future?.interest ?? 0),
   )}。 #月々1万円の罠 https://sadaharuinoue.github.io/LePandaIvre/revo/`;
   const revos = life.purchases.filter((p) => p.method === "revo");

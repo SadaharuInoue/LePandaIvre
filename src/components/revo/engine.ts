@@ -2,13 +2,41 @@ import { emergencies, temptations, type Item } from "@/data/revo/events";
 
 // ---- ゲームの前提（実在のカードを単純化したモデル） ----
 export const MONTHS = 24;
-export const ANNUAL_RATE = 0.15; // 実質年率15%
-export const MONTHLY_PAYMENT = 10000; // 元利定額：毎月の支払額は一定
+export const SLIDE_UNIT = 5000; // 残高スライド：残高10万円ごとに加算する支払額
 export const MONTHLY_SURPLUS = 30000; // 手取り − 生活費
 export const START_CASH = 100000;
 export const START_LIMIT = 500000;
 export const LIMIT_STEP = 300000;
 export const BONUSES: Record<number, number> = { 9: 80000, 15: 120000, 21: 150000 };
+
+export type Config = {
+  mode: "fixed" | "slide"; // 元利定額 / 残高スライド
+  rate: number; // 実質年率（0.15 = 15%）
+  payment: number; // 定額方式の毎月の支払額
+};
+
+export const defaultConfig: Config = {
+  mode: "fixed",
+  rate: 0.15,
+  payment: 10000,
+};
+
+/** 残高に応じた毎月の支払額（利息を含む） */
+export function paymentFor(config: Config, balance: number): number {
+  if (config.mode === "fixed") return config.payment;
+  return SLIDE_UNIT * Math.max(1, Math.ceil(balance / 100000));
+}
+
+/** 「月々◯◯」と謳われる金額の表記 */
+export function payLabel(config: Config): string {
+  const n = config.mode === "fixed" ? config.payment : SLIDE_UNIT;
+  return n % 10000 === 0 ? `${n / 10000}万円` : `${n.toLocaleString()}円`;
+}
+
+/** イベント文中の {pay} を現在の設定に置き換える */
+export function fill(text: string, config: Config): string {
+  return text.replaceAll("{pay}", payLabel(config));
+}
 
 export type Method = "revo" | "cash" | "family" | "skip";
 
@@ -28,6 +56,7 @@ export type Settlement = {
 };
 
 export type Life = {
+  config: Config;
   month: number; // 1〜MONTHS
   schedule: Scene[];
   cash: number;
@@ -56,20 +85,21 @@ export type Choice = {
 
 // ---- 計算 ----
 
-export function monthlyInterest(balance: number): number {
-  return Math.round((balance * ANNUAL_RATE) / 12);
+export function monthlyInterest(balance: number, rate: number): number {
+  return Math.round((balance * rate) / 12);
 }
 
-/** 今日から新規利用ゼロで毎月MONTHLY_PAYMENTずつ返し続けた場合 */
+/** 今日から新規利用ゼロで、設定どおりの支払いを続けた場合 */
 export function projection(
   balance: number,
+  config: Config,
 ): { months: number; interest: number } | null {
   let b = balance;
   let interest = 0;
   for (let m = 1; m <= 1200; m++) {
-    const i = monthlyInterest(b);
+    const i = monthlyInterest(b, config.rate);
     interest += i;
-    const pay = Math.min(MONTHLY_PAYMENT, b + i);
+    const pay = Math.min(paymentFor(config, b), b + i);
     b = b + i - pay;
     if (b <= 0) return { months: m, interest };
     if (m === 1 && pay <= i) return null; // 元金が減らない
@@ -88,7 +118,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function createLife(): Life {
+export function createLife(config: Config): Life {
   const bonusMonths = Object.keys(BONUSES).map(Number);
   const free = Array.from({ length: MONTHS }, (_, i) => i + 1).filter(
     (m) => m !== 1 && !bonusMonths.includes(m),
@@ -108,6 +138,7 @@ export function createLife(): Life {
   }
 
   return {
+    config,
     month: 1,
     schedule,
     cash: START_CASH,
@@ -159,14 +190,14 @@ export function choicesFor(life: Life): Choice[] {
 
   const revo: Choice = {
     label: "リボ払いにする",
-    hint: `${yen(item.price)}を購入。毎月のお支払いは${yen(MONTHLY_PAYMENT)}のまま`,
+    hint: `${yen(item.price)}を購入。${life.config.mode === "fixed" ? `毎月のお支払いは${yen(life.config.payment)}のまま` : `月々のお支払いは${payLabel(life.config)}から`}`,
     disabled: overLimit ? "利用枠をオーバーしてしまう" : undefined,
     apply: (l) => ({
       life: withPurchase(l, item, "revo", {
         balance: l.balance + item.price,
         joy: clamp(l.joy + item.joy),
       }),
-      text: item.revoText,
+      text: fill(item.revoText, l.config),
     }),
   };
   const cash: Choice = {
@@ -178,7 +209,7 @@ export function choicesFor(life: Life): Choice[] {
         cash: l.cash - item.price,
         joy: clamp(l.joy + item.joy),
       }),
-      text: item.cashText,
+      text: fill(item.cashText, l.config),
     }),
   };
 
@@ -187,7 +218,7 @@ export function choicesFor(life: Life): Choice[] {
       label: "今回は見送る",
       apply: (l) => ({
         life: withPurchase(l, item, "skip", { joy: clamp(l.joy - 3) }),
-        text: item.skipText,
+        text: fill(item.skipText, l.config),
       }),
     };
     return [revo, cash, skip];
@@ -267,8 +298,11 @@ function bonusChoices(life: Life, amount: number): Choice[] {
 
 /** 月末の締め処理。利息を計算して支払い、生活費の不足があればカードに乗る */
 export function settle(life: Life): { life: Life; settlement: Settlement } {
-  const interest = monthlyInterest(life.balance);
-  const payment = Math.min(MONTHLY_PAYMENT, life.balance + interest);
+  const interest = monthlyInterest(life.balance, life.config.rate);
+  const payment = Math.min(
+    paymentFor(life.config, life.balance),
+    life.balance + interest,
+  );
   const principal = payment - interest;
   let balance = life.balance + interest - payment;
   let cash = life.cash + MONTHLY_SURPLUS - payment;
@@ -335,7 +369,9 @@ const treats = [
 export function ending(life: Life): EndingResult {
   const revos = life.purchases.filter((p) => p.method === "revo");
   const revoTotal = revos.reduce((s, p) => s + p.price, 0);
-  const future = projection(life.balance);
+  const future = projection(life.balance, life.config);
+  const fixed = life.config.mode === "fixed";
+  const ratePct = Math.round(life.config.rate * 100);
   const neverEnds = life.balance > 0 && future === null;
   const lifetimeInterest =
     life.totalInterest + (future ? future.interest : 0);
@@ -347,7 +383,10 @@ export function ending(life: Life): EndingResult {
     title = "カードが止まった人";
     subtitle = "生活費さえカードで払い、枠も使い切りました";
     closing =
-      "毎月の請求は1万円のまま。だから気づくのが遅れました。気づいたときには、利息だけで返済額の大半が消えていました。ここまで来る前に、カード会社や消費生活センターに相談すれば道はあります。";
+      (fixed
+        ? `毎月の請求は${payLabel(life.config)}のまま。だから気づくのが遅れました。気づいたときには、利息だけで返済額の大半が消えていました。`
+        : "残高が増えるたびに毎月の請求も膨らみ、生活費まで圧迫されました。借金で借金を返す状態に陥っていました。") +
+      "ここまで来る前に、カード会社や消費生活センターに相談すれば道はあります。";
   } else if (life.balance <= 0 && life.totalInterest === 0) {
     title = "リボ知らずの堅実派";
     subtitle = "利息は1円も払いませんでした";
@@ -360,7 +399,7 @@ export function ending(life: Life): EndingResult {
       "リボの仕組みを知って、自分の力で返し切ったあなたは強い。払った利息は「勉強代」と思って、次からは使い方を選べます。";
   } else if (neverEnds) {
     title = "永久リボの住人";
-    subtitle = "毎月1万円を払っても、元金が1円も減りません";
+    subtitle = `毎月${yen(life.config.payment)}を払っても、元金が1円も減りません`;
     closing =
       "毎月きちんと払っているのに、残高は減らない。これがリボ払いのいちばん怖いところです。「月々の支払いは変わらない」という安心は、終わりの見えない返済と引き換えでした。";
   } else if (life.balance < 150000) {
@@ -372,7 +411,7 @@ export function ending(life: Life): EndingResult {
     title = "リボの沼の入り口に立つ人";
     subtitle = "気づけば、毎月の返済の3割以上が利息です";
     closing =
-      "月々1万円なら払える。その感覚のまま買い続けた結果が、この残高です。新しく買う前に、まず残高を減らす。それだけで未来がだいぶ軽くなります。";
+      `月々${payLabel(life.config)}なら払える。その感覚のまま買い続けた結果が、この残高です。新しく買う前に、まず残高を減らす。それだけで未来がだいぶ軽くなります。`;
   } else {
     title = "リボ地獄の住人";
     subtitle = "返済のほとんどが利息に消えています";
@@ -388,8 +427,10 @@ export function ending(life: Life): EndingResult {
     .filter((c) => c.count > 0);
 
   const lessons = [
-    "リボ払いは「毎月の支払額が一定」なので、買い物を重ねても請求額が変わらず、借りている実感が薄くなります。",
-    "手数料は年15%前後が一般的。残高が増えるほど、毎月の支払額のうち利息の割合が増え、元金がなかなか減りません。",
+    fixed
+      ? "リボ払いは「毎月の支払額が一定」なので、買い物を重ねても請求額が変わらず、借りている実感が薄くなります。"
+      : "残高スライド方式は返済が進みやすい反面、残高が増えると毎月の支払額も増え、生活費を圧迫します。足りない分をカードで払うと、さらに残高が増えます。",
+    `手数料は年${ratePct}%。残高が増えるほど、毎月の支払額のうち利息の割合が増え、元金がなかなか減りません。（年15%前後が一般的です）`,
     "「利用枠アップ」「ポイント○倍」「手数料キャンペーン」は、リボの利用を増やすための案内であることがほとんどです。",
     "対策：①カードの支払い方法を「一括」にしておく ②リボになっていないか明細を確認する ③残高があるうちは新規利用を止める ④余裕ができたら繰上返済する。",
     "返済に困ったら、早めにカード会社や、消費者ホットライン「188」（いやや）へ相談を。",
