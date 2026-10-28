@@ -35,6 +35,7 @@ npm run build  # out/ に静的ファイルを生成
 | `src/data/interests.ts` | 興味関心 |
 | `src/data/links.ts` | note / X / GitHub などの外部リンク |
 | `src/data/kansai/` | ゲーム「関西人分の1」（`/kansai/`）の府県・市町村・家業データ |
+| `src/data/revo/` | ゲーム「月々1万円の罠」（`/revo/`）のイベントデータ（ロジックは `src/components/revo/engine.ts`） |
 
 ## デプロイ
 
